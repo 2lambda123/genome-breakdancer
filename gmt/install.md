@@ -2,29 +2,31 @@
 
 BreakDancerMax has the following dependencies:
 
-* git
-* cmake 2.8+ ([cmake.org](http://cmake.org))
-* zlib
-* ncurses
-* A C++ compiler
+- git
+- cmake 2.8+ ([cmake.org](http://cmake.org))
+- zlib
+- ncurses
+- A C++ compiler
 
 The associated helper program `bam2cfg.pl` also requires the following Perl modules:
-* Statistics::Descriptive
-* GD::Graph
+
+- Statistics::Descriptive
+- GD::Graph
 
 ## Build Instructions
+
 ### Obtaining Build dependencies
 
-* For APT-based systems (Debian, Ubuntu), install the following packages:
+- For APT-based systems (Debian, Ubuntu), install the following packages:
 
 ```
 sudo apt-get install build-essential git-core cmake zlib1g-dev libncurses-dev
 ```
 
-* For RPM-based systems (Fedora, CentOS, RHEL), install the following packages instead:
+- For RPM-based systems (Fedora, CentOS, RHEL), install the following packages instead:
 
 ```
-sudo yum groupinstall "Development tools" 
+sudo yum groupinstall "Development tools"
 sudo yum install zlib-devel ncurses-devel cmake
 ```
 
@@ -57,5 +59,6 @@ make test
 The binary `breakdancer-max` can then be found under `$BD_ROOT/build/bin`. If you have administrative rights, then run `sudo make install` to install the tool for all users under `/usr/bin`.
 
 ### Obtaining Perl modules
+
 The procedure of downloading CPAN modules is described on the [CPAN Web site]
 (http://www.cpan.org/modules/INSTALL.html).

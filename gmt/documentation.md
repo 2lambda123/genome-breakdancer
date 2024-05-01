@@ -1,6 +1,6 @@
 # Running BreakDancer
 
-***
+---
 
 To run BreakDancer, first use bam2cfg.pl to prepare the required per-invocation config file. See the below for parameter descriptions.
 
@@ -15,11 +15,12 @@ breakdancer-max config_file.cfg
 
 # EXAMPLE PIPELINE
 
-***
+---
 
-Please see below for detailed information about the *bam2cfg.pl* and *breakdancer-max* commands.
+Please see below for detailed information about the _bam2cfg.pl_ and _breakdancer-max_ commands.
 
 ## STEP 1
+
 Create a configuration file using bam2cfg.pl:
 
 The precompiled Debian package will install this in /usr/lib/breakdancer-max{{page.version_suffix}} along with a few required Perl modules.
@@ -29,6 +30,7 @@ The precompiled Debian package will install this in /usr/lib/breakdancer-max{{pa
 </p>
 
 ## STEP 2
+
 Detect inter-chromosomal translocations:
 
 <p class='terminal' markdown='1'>
@@ -41,20 +43,24 @@ This step normally takes 12 hours or so for three bam files, 8 hours or so for t
 
 # bam2cfg
 
-***
+---
 
 ## NAME
+
 bam2cfg - create a configuration file for BreakDancer
 
 ## SYNOPSIS
-	bam2cfg.pl [options] input_bams > config_file
+
+    bam2cfg.pl [options] input_bams > config_file
 
 ## NOTES
+
 Manually view the insert size and flag distribution results in the output .cfg file to see if there are any data quality issue. Usually std/mean should be < 0.2 or 0.3 at most. The flag 32(x%), represents percent of chimeric insert, this number (x%) should usually be smaller than 3%.
 
 View png files for the insert size distribution. You should usually see a normal distribution, a bimodal distribution is undesirable and it is not recommended to continue BreakDancerMax step with this situation existing.
 
 ## OPTIONS
+
 <dl>
 <dt>-q INT</dt>
 <dd>Minimum mapping quality [default = 35]</dd>
@@ -92,9 +98,10 @@ View png files for the insert size distribution. You should usually see a normal
 
 # BreakDancerMax
 
-***
+---
 
 ## NAME
+
 BreakDancerMax - SV detection
 
 ## SYNOPSIS
@@ -102,6 +109,7 @@ BreakDancerMax - SV detection
 breakdancer-max [options] config_file
 
 ## OPTIONS
+
 <dl>
 <dt>-o STRING</dt>
 <dd>operate on a single chromosome [default is all chromosomes]</dd>
@@ -159,16 +167,18 @@ breakdancer-max [options] config_file
 </dl>
 
 ## DESCRIPTION
+
 Most of these options are self-explanatory. It is convenient to use the -o option to parallelize SV detection for each chromosome. When -o is used, the detection of inter-chromosomal translocation is disabled. In that case, it may be convenient to use -t in a separate process to detect putative inter-chromosomal translocations without bothering to analyze read pairs that are mapped to the same chromosome.
 
-BreakDancer only supports properly formatted bam files and has only been tested using bam files produced by BWA. To obtain the correct result, it is important to have readgroup (@RG) tag in both the header and each alignment in the bam files. 
+BreakDancer only supports properly formatted bam files and has only been tested using bam files produced by BWA. To obtain the correct result, it is important to have readgroup (@RG) tag in both the header and each alignment in the bam files.
 
 The input to breakdancer-max is a set of map files produced by a front-end aligner such as MAQ, BWA, NovoAlign and Bfast, and a tab-delimited configuration file that specifies the locations of the map files, the detection parameters, and the sample information.
 
 ### CONFIGURATION
+
 If your map files are in the sam/bam format, you can use the bam2cfg.pl in the released package to automatic generate a configuration file (bam2cfg.pl also has dependence on AlnParser.pm in the release package). If you have a single bam file that contains multiple libraries, make sure that the readgroup and library information are properly encoded in the sam/bam header, and in each alignment record, otherwise bam2cfg.pl may fail to produce a correct configuration file. Please follow instructions on [SourceForge](http://samtools.sourceforge.net) to properly format your bam files.
 
-An example manual configuration file is like this 
+An example manual configuration file is like this
 
 <p class='terminal' markdown='1'>
 map:1.map mean:219 std:18 readlen:36.00 sample:tA exe:maq-0.6.8 mapview -b 
@@ -177,7 +187,7 @@ map:3.map mean:219 std:18 readlen:36.00 sample:nA exe:maq-0.7.1 mapview -b
 map:4.map mean:219 std:18 readlen:36.00 sample:nB exe:maq-0.7.1 mapview -b 
 </p>
 
-An example configuration file produced by bam2cfg.pl look like this: 
+An example configuration file produced by bam2cfg.pl look like this:
 
 <p class='terminal' markdown='1'>
 readgroup:2825107881 platform:illumina map:tumor.bam readlen:75.00 lib:demolib1
@@ -192,16 +202,17 @@ num:10001 lower:95.36 upper:443.31 mean:311.68 std:42.86 exe:samtools view
 
 Each row must contain at least 6 key:value pairs (separated by colon) that specify:
 
-1.	the location of the map file
-2.	the mean insert size
-3.	the standard deviation insert size
-4.	the average read length
-5.	a unique identifier assigned to the map file (usually representing a PE library)
-6.	a command line that can run by perl system calls to produce MAQ mapview alignment
+1. the location of the map file
+2. the mean insert size
+3. the standard deviation insert size
+4. the average read length
+5. a unique identifier assigned to the map file (usually representing a PE library)
+6. a command line that can run by perl system calls to produce MAQ mapview alignment
 
 Listing multiple map files in a single configuration file would automatically enable pooled analysis: reads from all the map files are jointly analyzed to find unified SV hypotheses across all the map files.
 
 ### SEPARATION THRESHOLDS
+
 In addition to the above 6 keys: map, mean, std, readlen, sample, and exe, BreakDancerMax allows users to explicitly specify the separation thresholds using the keys: upper and lower. For example:
 
 <p class='terminal' markdown='1'>
@@ -212,45 +223,47 @@ This will instruct BreakDancerMax to detect deletions using read pairs that are 
 
 The upper and the lower key:value pairs, when explicitly specified, take precedence over the upper and the lower thresholds computed from the mean, the std, and the user specified threshold in the unit of standard deviation.
 
-upper: 
+upper:
 
         mean + std * threshold specified by user option -c
 
-lower: 
+lower:
 
         mean - std * threshold specified by user option -c
 
 ### OPTION DESCRIPTIONS
-The -c option by default equals to 3. Therefore, the upper and the lower separation threshold would be: mean + 3 std and mean - 3 std respectively. It is useful to explicitly specify the upper and the lower separation thresholds when the insert size distribution is not symmetric to the mean. 
 
-The -o option enables per-chromosome/reference analysis and is much faster when the input files are in the bam format. Please index the bam file using "samtools index" to utilize this option. You need to specify the exact reference names as they are in the bam files. 
+The -c option by default equals to 3. Therefore, the upper and the lower separation threshold would be: mean + 3 std and mean - 3 std respectively. It is useful to explicitly specify the upper and the lower separation thresholds when the insert size distribution is not symmetric to the mean.
 
-When -e is on, BreakDancerMax tries to estimate the mean and the standard deviation insert size from the data instead of relying on user's spec in the configuration file. Current implementation of this estimation process is slow. So it is recommended that users can specify the accurate thresholds in the configuration file. 
+The -o option enables per-chromosome/reference analysis and is much faster when the input files are in the bam format. Please index the bam file using "samtools index" to utilize this option. You need to specify the exact reference names as they are in the bam files.
 
-The -l option tell BreakDancerMax that the data is produced from Illumina long insert circularized library 
+When -e is on, BreakDancerMax tries to estimate the mean and the standard deviation insert size from the data instead of relying on user's spec in the configuration file. Current implementation of this estimation process is slow. So it is recommended that users can specify the accurate thresholds in the configuration file.
 
-The -f option uses the Fisher's methods to summarize scores from multiple libraries. It is recommended when there are many libraries. It ensures that the scores are independent of the number of libraries (uniform distribution of the P values) 
+The -l option tell BreakDancerMax that the data is produced from Illumina long insert circularized library
 
-The -q specifies the MAQ mapping quality threshold and can be used to skip reads that are not confidently mapped. 
+The -f option uses the Fisher's methods to summarize scores from multiple libraries. It is recommended when there are many libraries. It ensures that the scores are independent of the number of libraries (uniform distribution of the P values)
 
-The -s specifies the minimal required size of a SV anchoring region from which the anomalously mapped reads are found. This parameter has some small effects on the SV detection accuracy. Increasing -s improves the specificity but also reduces the sensitivity. The default 7 bp seemed to work well. 
+The -q specifies the MAQ mapping quality threshold and can be used to skip reads that are not confidently mapped.
 
-The -b parameter specifies the number of anomalous regions resides in the RAM before SV hypotheses begin to form among these regions. The default works well in general. For dataset that is exceptionally large, it may be helpful to reduce it to cut the resident RAM usage. 
+The -s specifies the minimal required size of a SV anchoring region from which the anomalously mapped reads are found. This parameter has some small effects on the SV detection accuracy. Increasing -s improves the specificity but also reduces the sensitivity. The default 7 bp seemed to work well.
+
+The -b parameter specifies the number of anomalous regions resides in the RAM before SV hypotheses begin to form among these regions. The default works well in general. For dataset that is exceptionally large, it may be helpful to reduce it to cut the resident RAM usage.
 
 The -d specifies a fastq file where all SV supporting reads will be saved in the fastq format. These reads can be realigned by other aligners such as novoalign, and then reanalyzed by BreakDancer.
 
 ### GENERAL ADVICE
-+ Insert size statistics are accumulated on a per-library (LB) basis using the RG SAM tag and the RG -> LB mapping in the SAM header. Make sure that this information is correct and maintained throughout the pipeline.
 
-+ The runtime of the bam2cfg.pl script should generally be measured in seconds, not hours (assuming reasonable i/o speed, WGS data, default-ish params [~10k required satisfactory observations per lib], and a handful of libraries).
+- Insert size statistics are accumulated on a per-library (LB) basis using the RG SAM tag and the RG -> LB mapping in the SAM header. Make sure that this information is correct and maintained throughout the pipeline.
 
-+ Bwa mem assigns lower mapping qualities than bwa backtrack (0.5.9, 0.6.2) to certain types of SV supporting (~100bp Illumina) reads. This can be controlled with the penalty related params to bwa mem (particularly -L), but we currently do not have a recommendation.
+- The runtime of the bam2cfg.pl script should generally be measured in seconds, not hours (assuming reasonable i/o speed, WGS data, default-ish params [~10k required satisfactory observations per lib], and a handful of libraries).
 
-+ In a handful of simulations where bwa-mem initially performed worse than bwa backtrack 0.5.9, decreasing the minimum mapping quality to 4 from 10 for the breakdancer executable (NOT the bam2cfg.pl script) launched bwa-mem well ahead in terms of sensitivity without destroying the false discovery rate.
+- Bwa mem assigns lower mapping qualities than bwa backtrack (0.5.9, 0.6.2) to certain types of SV supporting (~100bp Illumina) reads. This can be controlled with the penalty related params to bwa mem (particularly -L), but we currently do not have a recommendation.
 
-+ If bam2cfg.pl complains that a library is unsuitable for further analysis, that may mean:
-	+ It truly is: the insert size distribution of the library in question is too wide / too non-normal for breakdancer to make sense of. Not much can be done in this case.
-	+ Multiple libraries with different insert size characteristics have been accidentally been collapsed into one due to mislabeling (RG SAM tags, RG -> LB mappings in the SAM header). This can sometimes be fixed by repairing the SAM header.
+- In a handful of simulations where bwa-mem initially performed worse than bwa backtrack 0.5.9, decreasing the minimum mapping quality to 4 from 10 for the breakdancer executable (NOT the bam2cfg.pl script) launched bwa-mem well ahead in terms of sensitivity without destroying the false discovery rate.
 
-+ In recent tests, the score breakdancer reports has been useful for separating signal from noise for indels. My impression (today) is that it's less reliable for inversions and (inter and intra-chromosomal) translocations, however.
+- If bam2cfg.pl complains that a library is unsuitable for further analysis, that may mean:
 
+  - It truly is: the insert size distribution of the library in question is too wide / too non-normal for breakdancer to make sense of. Not much can be done in this case.
+  - Multiple libraries with different insert size characteristics have been accidentally been collapsed into one due to mislabeling (RG SAM tags, RG -> LB mappings in the SAM header). This can sometimes be fixed by repairing the SAM header.
+
+- In recent tests, the score breakdancer reports has been useful for separating signal from noise for indels. My impression (today) is that it's less reliable for inversions and (inter and intra-chromosomal) translocations, however.
