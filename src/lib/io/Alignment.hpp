@@ -12,8 +12,8 @@
 #include <vector>
 
 extern "C" {
-    #include <sam.h>
-    #include <bam.h>
+#include <sam.h>
+#include <bam.h>
 }
 
 struct LibraryInfo;

@@ -38,60 +38,60 @@ using boost::chrono::high_resolution_clock;
 using boost::chrono::milliseconds;
 
 namespace {
-    typedef SCORE_FLOAT_TYPE real_type;
+typedef SCORE_FLOAT_TYPE real_type;
 
-    // compute the probability score
-    real_type ComputeProbScore(
-            int total_region_size,
-            map<size_t,int> &rlibrary_readcount,
-            ReadFlag type,
-            int fisher,
-            LibraryInfo const& lib_info
-            )
-    {
-        real_type lambda;
-        real_type logpvalue = 0.0;
-        real_type err = 0.0;
-        for(map<size_t,int>::const_iterator ii_rlibrary_readcount = rlibrary_readcount.begin(); ii_rlibrary_readcount != rlibrary_readcount.end(); ii_rlibrary_readcount ++){
-            size_t const& libindex = ii_rlibrary_readcount->first;
-            int const& readcount = ii_rlibrary_readcount->second;
-            LibraryConfig const& lib_config = lib_info._cfg.library_config(libindex);
-            LibraryFlagDistribution const& lib_flags = lib_info._summary.library_flag_distribution(lib_config.index);
+// compute the probability score
+real_type ComputeProbScore(
+    int total_region_size,
+    map<size_t,int> &rlibrary_readcount,
+    ReadFlag type,
+    int fisher,
+    LibraryInfo const& lib_info
+)
+{
+    real_type lambda;
+    real_type logpvalue = 0.0;
+    real_type err = 0.0;
+    for(map<size_t,int>::const_iterator ii_rlibrary_readcount = rlibrary_readcount.begin(); ii_rlibrary_readcount != rlibrary_readcount.end(); ii_rlibrary_readcount ++) {
+        size_t const& libindex = ii_rlibrary_readcount->first;
+        int const& readcount = ii_rlibrary_readcount->second;
+        LibraryConfig const& lib_config = lib_info._cfg.library_config(libindex);
+        LibraryFlagDistribution const& lib_flags = lib_info._summary.library_flag_distribution(lib_config.index);
 
-            uint32_t read_count_for_flag = lib_flags.read_counts_by_flag[type];
-            lambda = real_type(total_region_size)* (real_type(read_count_for_flag)/real_type(lib_info._summary.covered_reference_length()));
-            lambda = max(real_type(1.0e-10), lambda);
-            boost::math::poisson_distribution<real_type> poisson(lambda);
-            real_type tmp_a = log(cdf(complement(poisson, readcount))) - err;
-            real_type tmp_b = logpvalue + tmp_a;
-            err = (tmp_b - logpvalue) - tmp_a;
-            logpvalue = tmp_b;
-        }
-
-        if(fisher && logpvalue < 0) {
-            // Fisher's Method
-            chi_squared chisq(2*rlibrary_readcount.size());
-            try {
-                real_type fisherP = cdf(complement(chisq, -2*logpvalue));
-                logpvalue = fisherP > ZERO ? log(fisherP) : LZERO;
-            } catch (const std::exception& e) {
-                cerr << "chi squared problem: N=" << 2*rlibrary_readcount.size()
-                    << ", log(p)=" << logpvalue << ", -2*log(p) = " << -2*logpvalue << "\n";
-            }
-        }
-
-        return logpvalue;
+        uint32_t read_count_for_flag = lib_flags.read_counts_by_flag[type];
+        lambda = real_type(total_region_size)* (real_type(read_count_for_flag)/real_type(lib_info._summary.covered_reference_length()));
+        lambda = max(real_type(1.0e-10), lambda);
+        boost::math::poisson_distribution<real_type> poisson(lambda);
+        real_type tmp_a = log(cdf(complement(poisson, readcount))) - err;
+        real_type tmp_b = logpvalue + tmp_a;
+        err = (tmp_b - logpvalue) - tmp_a;
+        logpvalue = tmp_b;
     }
+
+    if(fisher && logpvalue < 0) {
+        // Fisher's Method
+        chi_squared chisq(2*rlibrary_readcount.size());
+        try {
+            real_type fisherP = cdf(complement(chisq, -2*logpvalue));
+            logpvalue = fisherP > ZERO ? log(fisherP) : LZERO;
+        } catch (const std::exception& e) {
+            cerr << "chi squared problem: N=" << 2*rlibrary_readcount.size()
+                 << ", log(p)=" << logpvalue << ", -2*log(p) = " << -2*logpvalue << "\n";
+        }
+    }
+
+    return logpvalue;
+}
 }
 
 BreakDancer::BreakDancer(
-        IAlignmentClassifier const& read_classifier,
-        Options const& opts,
-        LibraryInfo const& lib_info,
-        ReadRegionData& read_regions,
-        BamReaderBase& merged_reader,
-        int max_read_window_size
-        )
+    IAlignmentClassifier const& read_classifier,
+    Options const& opts,
+    LibraryInfo const& lib_info,
+    ReadRegionData& read_regions,
+    BamReaderBase& merged_reader,
+    int max_read_window_size
+)
     : _read_classifier(read_classifier)
     , _opts(opts)
     , _lib_info(lib_info)
@@ -134,7 +134,7 @@ void BreakDancer::run() {
         _read_classifier,
         _lib_info._cfg,
         _opts.need_sequence_data()
-        );
+    );
 
     while (Alignment::Ptr aln = src.next()) {
         push_read(aln);
@@ -150,22 +150,22 @@ void BreakDancer::push_read(Alignment::Ptr const& alnptr) {
     if (aln.lib_index() == (std::size_t) -1) {
         return;
     }
-    
+
     LibraryConfig const& lib_config = _lib_info._cfg.library_config(aln.lib_index());
 
     // XXX: this value can be missing in the config (indicated by a value of -1),
     // in which case we'll wan't to use the default from the cmdline rather than
     // admit everything.
     int min_mapq = lib_config.min_mapping_quality < 0 ?
-            _opts.min_map_qual : lib_config.min_mapping_quality;
+                   _opts.min_map_qual : lib_config.min_mapping_quality;
 
     // Ignore fragments, poorly mapped reads, etc.
     if (aln.bdflag() == ReadFlag::NA || aln.either_unmapped() || aln.bdqual() <= min_mapq
-        // ignore CTX when not in ctx mode
-        || (_opts.transchr_rearrange && !aln.interchrom_pair())
-        // ignore reads mapped too distantly on the same chromosome
-        || (aln.bdflag() != ReadFlag::ARP_CTX && aln.abs_isize() > _opts.max_sd)
-        )
+            // ignore CTX when not in ctx mode
+            || (_opts.transchr_rearrange && !aln.interchrom_pair())
+            // ignore reads mapped too distantly on the same chromosome
+            || (aln.bdflag() != ReadFlag::ARP_CTX && aln.abs_isize() > _opts.max_sd)
+       )
     {
         return;
     }
@@ -256,7 +256,7 @@ void BreakDancer::process_breakpoint() {
         _rdata.add_region(_region_start_tid, _region_start_pos, _region_end_pos, _nnormal_reads, reads_in_current_region);
 
         ++_buffer_size; //increment tracking of number of regions in buffer???
-        if(_buffer_size > _opts.buffer_size){
+        if(_buffer_size > _opts.buffer_size) {
             build_connection();
             //flush buffer by building connection
             _buffer_size = 0;
@@ -365,8 +365,8 @@ void BreakDancer::process_sv(std::vector<int> const& snodes) {
     //      read_pair.count(read.query_name()) == 0
     using boost::bind;
     boost::function<bool(Alignment::Ptr const&)> is_supportive = bind(
-        std::equal_to<size_t>(), 0, bind(&SvBuilder::ObservedReads::count,
-            &svb.observed_reads, bind(&Alignment::query_name, _1)));
+                std::equal_to<size_t>(), 0, bind(&SvBuilder::ObservedReads::count,
+                        &svb.observed_reads, bind(&Alignment::query_name, _1)));
 
     for (vector<int>::const_iterator i = snodes.begin(); i != snodes.end(); ++i)
         _rdata.remove_reads_in_region_if(*i, is_supportive);
@@ -393,7 +393,7 @@ void BreakDancer::process_sv(std::vector<int> const& snodes) {
 
     string sptype_tmp;
     float diff = 0;
-    if(_opts.CN_lib == 1){
+    if(_opts.CN_lib == 1) {
         for(
             map<size_t,int>::const_iterator ii_type_lib_rc = svb.type_library_readcount[svb.flag].begin();
             ii_type_lib_rc != svb.type_library_readcount[svb.flag].end();
@@ -405,10 +405,10 @@ void BreakDancer::process_sv(std::vector<int> const& snodes) {
             // intialize to be zero, in case of no library, or DEL, or ITX.
 
             string copy_number_str = "NA";
-            if(svb.flag != ReadFlag::ARP_CTX){
+            if(svb.flag != ReadFlag::ARP_CTX) {
                 float copy_number_ = 0;
 
-                if(svb.copy_number.find(lib_config.name) != svb.copy_number.end()){
+                if(svb.copy_number.find(lib_config.name) != svb.copy_number.end()) {
                     copy_number_ = svb.copy_number[lib_config.name];
                     stringstream sstr;
                     sstr << fixed;
@@ -424,7 +424,7 @@ void BreakDancer::process_sv(std::vector<int> const& snodes) {
             diff += float(svb.type_library_meanspan[svb.flag][index]) - float(svb.type_library_readcount[svb.flag][index])*lib_config.mean_insertsize;
         }
     } // do lib for copy number and support reads
-    else{
+    else {
         map<string, int> type_bam_readcount;
         for(
             map<size_t, int>::const_iterator ii_type_lib_rc = svb.type_library_readcount[svb.flag].begin();
@@ -466,25 +466,25 @@ void BreakDancer::process_sv(std::vector<int> const& snodes) {
     // Convert the coordinates to base 1
     ++svb.pos[0];
     ++svb.pos[1];
-    if(PhredQ > _opts.score_threshold){
+    if(PhredQ > _opts.score_threshold) {
         bam_header_t const* bam_header = _merged_reader.header();
         cout << bam_header->target_name[svb.chr[0]]
-            << "\t" << svb.pos[0]
-            << "\t" << svb.fwd_read_count[0] << "+" << svb.rev_read_count[0] << "-"
-            << "\t" << bam_header->target_name[svb.chr[1]]
-            << "\t" << svb.pos[1]
-            << "\t" << svb.fwd_read_count[1] << "+" << svb.rev_read_count[1] << "-"
-            << "\t" << svb.sv_type()
-            << "\t" << svb.diffspan
-            << "\t" << PhredQ
-            << "\t" << svb.flag_counts[svb.flag]
-            << "\t" << sptype
-            ;
+             << "\t" << svb.pos[0]
+             << "\t" << svb.fwd_read_count[0] << "+" << svb.rev_read_count[0] << "-"
+             << "\t" << bam_header->target_name[svb.chr[1]]
+             << "\t" << svb.pos[1]
+             << "\t" << svb.fwd_read_count[1] << "+" << svb.rev_read_count[1] << "-"
+             << "\t" << svb.sv_type()
+             << "\t" << svb.diffspan
+             << "\t" << PhredQ
+             << "\t" << svb.flag_counts[svb.flag]
+             << "\t" << sptype
+             ;
 
         if(_opts.print_AF == 1)
             cout <<  "\t" << svb.allele_frequency;
 
-        if(_opts.CN_lib == 0 && svb.flag != ReadFlag::ARP_CTX){
+        if(_opts.CN_lib == 0 && svb.flag != ReadFlag::ARP_CTX) {
             vector<string> const& bams = _lib_info._cfg.bam_files();
             for(vector<string>::const_iterator iter = bams.begin(); iter != bams.end(); ++iter) {
                 map<string, float>::const_iterator cniter = svb.copy_number.find(*iter);
@@ -512,13 +512,13 @@ void BreakDancer::process_sv(std::vector<int> const& snodes) {
     }
 
     std::for_each(svb.reads_to_free.begin(), svb.reads_to_free.end(),
-        boost::bind(&ReadRegionData::erase_read, &_rdata, _1));
+                  boost::bind(&ReadRegionData::erase_read, &_rdata, _1));
 }
 
 void BreakDancer::dump_fastq(
-        ReadFlag const& flag,
-        std::vector<Alignment::Ptr> const& support_reads
-        )
+    ReadFlag const& flag,
+    std::vector<Alignment::Ptr> const& support_reads
+)
 {
     map<string,int> pairing;
     for (auto i = support_reads.begin(); i != support_reads.end(); ++i) {

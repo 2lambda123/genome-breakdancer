@@ -109,12 +109,12 @@ BamConfig::BamConfig(std::istream& in, int cutoff_sd)
     for (size_t i = 0; i < _library_config.size(); ++i) {
         LibraryConfig& lib = _library_config[i];
         vector<string>::const_iterator bam_iter = find(
-            bam_files().begin(), bam_files().end(), lib.bam_file);
+                    bam_files().begin(), bam_files().end(), lib.bam_file);
 
         if (bam_iter == bam_files().end())
             throw runtime_error(str(format(
-                "Bam file '%1%' referenced by library '%2%' but not found in "
-                "bam list!") % lib.bam_file % lib.name));
+                                        "Bam file '%1%' referenced by library '%2%' but not found in "
+                                        "bam list!") % lib.bam_file % lib.name));
 
         lib.bam_file_index = std::distance(bam_files().begin(), bam_iter);
     }

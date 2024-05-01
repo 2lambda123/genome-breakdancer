@@ -17,10 +17,10 @@ BamSummary::BamSummary()
 
 // Construct flag distribution from bam files listed in in BamConfig.
 BamSummary::BamSummary(
-        Options const& opts,
-        BamConfig const& bam_config,
-        IAlignmentClassifier const& alignment_classifier
-        )
+    Options const& opts,
+    BamConfig const& bam_config,
+    IAlignmentClassifier const& alignment_classifier
+)
     : _covered_ref_len(0)
     , _library_flag_distributions(bam_config.num_libs())
     , _library_sequence_coverages(_library_flag_distributions.size())
@@ -45,10 +45,10 @@ float BamSummary::library_sequence_coverage(size_t libIdx) const {
 }
 
 void BamSummary::_analyze_bam(
-        Options const& opts,
-        BamConfig const& bam_config,
-        BamReaderBase& reader,
-        IAlignmentClassifier const& alignment_classifier)
+    Options const& opts,
+    BamConfig const& bam_config,
+    BamReaderBase& reader,
+    IAlignmentClassifier const& alignment_classifier)
 {
     int last_pos = 0;
     int last_tid = -1;
@@ -61,7 +61,7 @@ void BamSummary::_analyze_bam(
         alignment_classifier,
         bam_config,
         false // do not need sequence data
-        );
+    );
 
 
     // FIXME: test with no read groups
@@ -79,7 +79,7 @@ void BamSummary::_analyze_bam(
 
         LibraryConfig const& lib_config = bam_config.library_config(aln.lib_index());
         int min_mapq = lib_config.min_mapping_quality < 0 ?
-                opts.min_map_qual : lib_config.min_mapping_quality;
+                       opts.min_map_qual : lib_config.min_mapping_quality;
 
         if (aln.bdqual() <= min_mapq)
             continue;
@@ -91,8 +91,8 @@ void BamSummary::_analyze_bam(
         }
 
         if (aln.bdflag() == ReadFlag::NA || aln.either_unmapped()
-            || (opts.transchr_rearrange && !aln.interchrom_pair())
-            )
+                || (opts.transchr_rearrange && !aln.interchrom_pair())
+           )
         {
             continue;
         }
@@ -119,9 +119,9 @@ void BamSummary::_analyze_bam(
 
     if (ref_len == 0) {
         cerr << "Input file " << reader.description() <<
-            " does not contain legitimate paired end alignment. "
-            "Please check that you have the correct paths and the "
-            "map/bam files are properly formated and indexed.\n";
+             " does not contain legitimate paired end alignment. "
+             "Please check that you have the correct paths and the "
+             "map/bam files are properly formated and indexed.\n";
     }
 
     _read_count_per_bam[reader.path()] = read_count;
@@ -131,9 +131,9 @@ void BamSummary::_analyze_bam(
 }
 
 void BamSummary::_analyze_bams(
-        Options const& opts,
-        BamConfig const& bam_config,
-        IAlignmentClassifier const& alignment_classifier)
+    Options const& opts,
+    BamConfig const& bam_config,
+    IAlignmentClassifier const& alignment_classifier)
 {
     std::vector<std::string> bam_files = bam_config.bam_files();
     for(std::vector<std::string>::const_iterator iter = bam_files.begin(); iter != bam_files.end(); ++iter) {
@@ -155,10 +155,10 @@ void BamSummary::_analyze_bams(
 
 bool BamSummary::operator==(BamSummary const& rhs) const {
     return _covered_ref_len == rhs._covered_ref_len
-        && _read_count_per_bam == rhs._read_count_per_bam
-        && _library_flag_distributions == _library_flag_distributions
-        && _library_sequence_coverages == _library_sequence_coverages
-        ;
+           && _read_count_per_bam == rhs._read_count_per_bam
+           && _library_flag_distributions == _library_flag_distributions
+           && _library_sequence_coverages == _library_sequence_coverages
+           ;
 }
 
 bool BamSummary::operator!=(BamSummary const& rhs) const {
