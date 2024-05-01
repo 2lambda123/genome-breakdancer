@@ -17,18 +17,18 @@
 std::string const NO_PROGRESS_COUNT_CMDLINE_PARAM_NAME("no-progress-count");
 
 ConfigBuilder::ConfigBuilder(
-          std::ostream& out
-        , std::ostream* dist_out
-        , std::vector<std::string> const& bam_paths
-        , std::size_t min_mapq
-        , std::size_t min_observations
-        , double n_devs
-        , double n_mads
-        , std::size_t no_progress_limit
-        , std::size_t skip
-        , std::vector<std::string> regions
-        , bool verbose // = false
-        )
+    std::ostream& out
+    , std::ostream* dist_out
+    , std::vector<std::string> const& bam_paths
+    , std::size_t min_mapq
+    , std::size_t min_observations
+    , double n_devs
+    , double n_mads
+    , std::size_t no_progress_limit
+    , std::size_t skip
+    , std::vector<std::string> regions
+    , bool verbose // = false
+)
     : out_(out)
     , dist_out_(dist_out)
     , bam_paths_(bam_paths)
@@ -52,7 +52,7 @@ std::unique_ptr<BamReaderBase> ConfigBuilder::open_bam(std::string const& path) 
             std::cerr << "Warning: ignoring --skip option since regions are given\n";
         }
         return make_unique_<MultiRegionLimitedBamReader<AlignmentFilter::IsPrimary>>(
-            path, regions_);
+                   path, regions_);
     }
     else {
         auto reader = make_unique_<BamReader<AlignmentFilter::IsPrimary>>(path);
@@ -74,15 +74,15 @@ void ConfigBuilder::execute() {
 }
 
 namespace {
-    struct ReadStats {
-        CountsDistribution<std::size_t> isize;
-        CountsDistribution<std::size_t> length;
+struct ReadStats {
+    CountsDistribution<std::size_t> isize;
+    CountsDistribution<std::size_t> length;
 
-        void observe(bam1_t const* entry) {
-            isize.observe(entry->core.isize);
-            length.observe(entry->core.l_qseq);
-        }
-    };
+    void observe(bam1_t const* entry) {
+        isize.observe(entry->core.isize);
+        length.observe(entry->core.l_qseq);
+    }
+};
 }
 
 void ConfigBuilder::process_bam(BamReaderBase& reader) {
@@ -102,7 +102,7 @@ void ConfigBuilder::process_bam(BamReaderBase& reader) {
     while (reader.next(entry) > 0 && !rg_remaining.empty()) {
         double mapq = determine_bdqual(entry);
         if (!(entry->core.flag & BAM_FPROPER_PAIR) || entry->core.isize < 1
-            || mapq < min_mapq_)
+                || mapq < min_mapq_)
         {
             continue;
         }
@@ -115,15 +115,15 @@ void ConfigBuilder::process_bam(BamReaderBase& reader) {
             std::stringstream ss;
             if (++no_progress_counter >= no_progress_limit_) {
                 ss << "Error: " << no_progress_counter
-                    << " reads processed with no progress made."
-                    << " Still waiting for read groups:\n";
+                   << " reads processed with no progress made."
+                   << " Still waiting for read groups:\n";
                 for (auto k = rg_remaining.begin(); k != rg_remaining.end(); ++k) {
-                    ss << "\t" << k->first << " needs " << k->second 
-                        << " more observations\n";
+                    ss << "\t" << k->first << " needs " << k->second
+                       << " more observations\n";
                 }
                 ss << "Note: this limit can be adjusted by the "
-                    << "--" << NO_PROGRESS_COUNT_CMDLINE_PARAM_NAME
-                    << " parameter.";
+                   << "--" << NO_PROGRESS_COUNT_CMDLINE_PARAM_NAME
+                   << " parameter.";
                 throw std::runtime_error(ss.str());
             }
             continue;
@@ -152,7 +152,7 @@ void ConfigBuilder::process_bam(BamReaderBase& reader) {
         double median = dist.median();
         double limit = n_mads_ * mad + median;
         std::cerr << "Read group " << i->first
-            << ": ignoring insert sizes above " << limit << "\n";
+                  << ": ignoring insert sizes above " << limit << "\n";
 
         dist.trim_above(limit, trim_log);
 
@@ -162,27 +162,27 @@ void ConfigBuilder::process_bam(BamReaderBase& reader) {
         double sd_hi = 0.0;
         double sd = dist.split_sd(mean, sd_lo, sd_hi);
         out_ << "readgroup:" << i->first
-            << "\tplatform:illumina"
-            << "\tmap:" << reader.path()
-            << "\treadlen:" << readlen
-            << "\tlib:" << rg_lib[i->first]
-            << "\tnum:" << n
-            << "\tlower:" << std::max(0.0, mean - n_devs_ * sd_lo)
-            << "\tupper:" << mean + n_devs_ * sd_hi
-            << "\tmean:" << mean
-            << "\tstd:" << sd
-            << "\n";
+             << "\tplatform:illumina"
+             << "\tmap:" << reader.path()
+             << "\treadlen:" << readlen
+             << "\tlib:" << rg_lib[i->first]
+             << "\tnum:" << n
+             << "\tlower:" << std::max(0.0, mean - n_devs_ * sd_lo)
+             << "\tupper:" << mean + n_devs_ * sd_hi
+             << "\tmean:" << mean
+             << "\tstd:" << sd
+             << "\n";
 
         write_distribution(reader.path(), i->first, rg_lib[i->first], dist);
     }
 }
 
 void ConfigBuilder::write_distribution(
-      std::string const& bam_file
+    std::string const& bam_file
     , std::string const& read_group
     , std::string const& library
     , CountsDistribution<std::size_t> const& dist
-    )
+)
 {
     if (!dist_out_)
         return;
@@ -190,6 +190,6 @@ void ConfigBuilder::write_distribution(
 
     for (auto i = dist.begin(); i != dist.end(); ++i) {
         *dist_out_ << bam_file << "\t" << read_group << "\t" << library << "\t"
-            << i->first << "\t" << i->second << "\n";
+                   << i->first << "\t" << i->second << "\n";
     }
 }

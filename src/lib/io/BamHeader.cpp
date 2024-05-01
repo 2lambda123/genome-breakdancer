@@ -30,8 +30,8 @@ boost::unordered_map<std::string, std::string> rg2lib_map(bam_header_t* header) 
         char const* lib_name = sam_tbl_get(header->rg2lib, rgs[i]);
         if (!lib_name) {
             throw std::runtime_error(str(format(
-                "failed to get library name for read group %1%"
-                ) % rgs[i]));
+                                             "failed to get library name for read group %1%"
+                                         ) % rgs[i]));
         }
 
         rv[rgs[i]] = lib_name;

@@ -16,9 +16,15 @@ public:
     void set_region(char const* region);
     virtual int next(bam1_t* entry);
 
-    int tid() const { return _tid; }
-    int beg() const { return _beg; }
-    int end() const { return _end; }
+    int tid() const {
+        return _tid;
+    }
+    int beg() const {
+        return _beg;
+    }
+    int end() const {
+        return _end;
+    }
 
     std::string description() const {
         return _path + " (region: " + _region + ")";
@@ -59,8 +65,8 @@ void RegionLimitedBamReader<Filter>::set_region(char const* region) {
 
     if (bam_parse_region(BamReader<Filter>::_in->header, region, &_tid, &_beg, &_end) < 0) {
         throw std::runtime_error(str(format(
-            "Failed to parse bam region '%1%' for file %2%. ")
-            % region % this->path()));
+                                         "Failed to parse bam region '%1%' for file %2%. ")
+                                     % region % this->path()));
     }
 
     if (_iter)

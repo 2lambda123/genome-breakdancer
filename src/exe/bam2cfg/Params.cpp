@@ -14,55 +14,55 @@ Params parse_cmdline(int argc, char** argv) {
 
     std::string no_progress_count(NO_PROGRESS_COUNT_CMDLINE_PARAM_NAME + ",x");
     opts.add_options()
-        ("help,h", "this message")
+    ("help,h", "this message")
 
-        ("input-file,i"
-            , po::value<std::vector<std::string>>(&rv.bams)
-            , "Input bam files (positional arguments work too)")
+    ("input-file,i"
+     , po::value<std::vector<std::string>>(&rv.bams)
+     , "Input bam files (positional arguments work too)")
 
-        ("regions-file,r"
-            , po::value<std::string>(&rv.regions_path)
-            , "File containing regions to same from (region format: 1:100-200, one per line)")
+    ("regions-file,r"
+     , po::value<std::string>(&rv.regions_path)
+     , "File containing regions to same from (region format: 1:100-200, one per line)")
 
-        ("skip,s"
-            , po::value<std::size_t>(&rv.skip)->default_value(0)
-            , "Number of reads to skip before accumulation begins (no effect when -r given)")
+    ("skip,s"
+     , po::value<std::size_t>(&rv.skip)->default_value(0)
+     , "Number of reads to skip before accumulation begins (no effect when -r given)")
 
-        (no_progress_count.c_str()
-            , po::value<std::size_t>(&rv.no_progress_limit)->default_value(1000)
-            , "Abort after observing this many reads with no progress")
+    (no_progress_count.c_str()
+     , po::value<std::size_t>(&rv.no_progress_limit)->default_value(1000)
+     , "Abort after observing this many reads with no progress")
 
-        ("min,n"
-            , po::value<std::size_t>(&rv.min_observations)->default_value(100000)
-            , "Minimum number of reads required to estimate parameters "
-              "(per read group)")
+    ("min,n"
+     , po::value<std::size_t>(&rv.min_observations)->default_value(100000)
+     , "Minimum number of reads required to estimate parameters "
+     "(per read group)")
 
-        ("min-mapq,q"
-            , po::value<std::size_t>(&rv.min_mapq)->default_value(35)
-            , "Minimum mapping quality")
+    ("min-mapq,q"
+     , po::value<std::size_t>(&rv.min_mapq)->default_value(35)
+     , "Minimum mapping quality")
 
-        ("output,o"
-            , po::value<std::string>(&rv.out_path)->default_value("-")
-            , "Output file (- for stdout)")
+    ("output,o"
+     , po::value<std::string>(&rv.out_path)->default_value("-")
+     , "Output file (- for stdout)")
 
-        ("dist-output,d"
-            , po::value<std::string>(&rv.dist_out_path)->default_value("")
-            , "Output file for insert size distribution (optional)")
+    ("dist-output,d"
+     , po::value<std::string>(&rv.dist_out_path)->default_value("")
+     , "Output file for insert size distribution (optional)")
 
-        ("sd,s"
-            , po::value<double>(&rv.num_devs)->default_value(4)
-            , "Cutoff in standard deviations")
+    ("sd,s"
+     , po::value<double>(&rv.num_devs)->default_value(4)
+     , "Cutoff in standard deviations")
 
-        ("mad,m"
-            , po::value<double>(&rv.num_mads)->default_value(10)
-            , "Ignore insert size outliers larger than this many median "
-              "absolute deviations above the median")
+    ("mad,m"
+     , po::value<double>(&rv.num_mads)->default_value(10)
+     , "Ignore insert size outliers larger than this many median "
+     "absolute deviations above the median")
 
-        ("verbose,V"
-            , po::bool_switch(&rv.verbose)->default_value(false)
-            , "Print verbose information about outliers")
+    ("verbose,V"
+     , po::bool_switch(&rv.verbose)->default_value(false)
+     , "Print verbose information about outliers")
 
-        ;
+    ;
 
     po::positional_options_description pos_opts;
     pos_opts.add("input-file", -1);

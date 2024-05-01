@@ -16,9 +16,9 @@ class CountsDistribution;
 
 template<typename T>
 class CountsDistribution<
-          T
-        , typename std::enable_if<std::is_arithmetic<T>::value>::type
-        >
+    T
+    , typename std::enable_if<std::is_arithmetic<T>::value>::type
+    >
 {
 public:
 
@@ -132,7 +132,7 @@ public:
     }
 
     enum which_ {
-          FULL = 0
+        FULL = 0
         , LO = 1
         , HI = 2
     };

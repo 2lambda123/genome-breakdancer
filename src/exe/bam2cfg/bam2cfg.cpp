@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
         }
 
         ConfigBuilder cfg_builder(
-              *out
+            *out
             , dist_out.get()
             , params.bams
             , params.min_mapq
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
             , params.skip
             , regions
             , params.verbose
-            );
+        );
 
         cfg_builder.execute();
     }
