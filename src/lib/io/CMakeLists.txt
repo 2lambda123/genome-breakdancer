@@ -34,8 +34,7 @@ set(SOURCES
     LibraryFlagDistribution.hpp
     LibraryInfo.hpp
     RawBamEntry.hpp
-    RegionLimitedBamReader.hpp
-)
+    RegionLimitedBamReader.hpp)
 
 add_library(io ${SOURCES})
 target_link_libraries(io common ${Samtools_LIBRARIES} z m)

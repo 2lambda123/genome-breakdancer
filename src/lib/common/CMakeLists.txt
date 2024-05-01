@@ -10,7 +10,6 @@ set(SOURCES
     ReadFlags.hpp
     Timer.hpp
     namespace.hpp
-    utility.hpp
-)
+    utility.hpp)
 
 add_library(common ${SOURCES})
