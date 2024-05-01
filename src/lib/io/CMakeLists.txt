@@ -8,6 +8,8 @@ set(SOURCES
     BamConfig.hpp
     BamConfigEntry.cpp
     BamConfigEntry.hpp
+    BamHeader.cpp
+    BamHeader.hpp
     BamIo.cpp
     BamIo.hpp
     BamMerger.cpp
@@ -18,6 +20,8 @@ set(SOURCES
     BamSummary.hpp
     BamWriter.cpp
     BamWriter.hpp
+    ConfigBuilder.cpp
+    ConfigBuilder.hpp
     ConfigLoader.cpp
     ConfigLoader.hpp
     FastqWriter.cpp
