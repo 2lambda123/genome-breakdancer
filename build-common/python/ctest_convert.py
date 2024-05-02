@@ -1,6 +1,7 @@
 from lxml import etree
 import StringIO
 import sys
+import lxml.etree
 
 TAGfile = open(sys.argv[1]+"/Testing/TAG", 'r')
 dirname = TAGfile.readline().strip()
@@ -11,7 +12,7 @@ xslfile = open(sys.argv[2], 'r')
 xmlcontent = xmlfile.read()
 xslcontent = xslfile.read()
 
-xmldoc = etree.parse(StringIO.StringIO(xmlcontent))
+xmldoc = etree.parse(StringIO.StringIO(xmlcontent), parser=lxml.etree.XMLParser(resolve_entities=False))
 xslt_root = etree.XML(xslcontent)
 transform = etree.XSLT(xslt_root)
 
