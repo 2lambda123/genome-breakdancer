@@ -3,7 +3,7 @@ import StringIO
 import sys
 
 TAGfile = open(sys.argv[1]+"/Testing/TAG", 'r')
-dirname = TAGfile.readline().strip()
+dirname = TAGfile.readline(5_000_000).strip()
 
 xmlfile = open(sys.argv[1]+"/Testing/"+dirname+"/Test.xml", 'r')
 xslfile = open(sys.argv[2], 'r')
